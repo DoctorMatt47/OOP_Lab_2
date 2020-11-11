@@ -4,7 +4,8 @@
 #include <QMainWindow>
 #include <QListWidgetItem>
 
-#include <Timer/timer.h>
+#include <Timer/Logic/timer.h>
+#include <Alarm/Logic/alarm.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -35,11 +36,13 @@ private slots:
 
     void on_buttonPause_clicked();
 
+    void on_listAlarms_itemClicked(QListWidgetItem *item);
+
 private:
     Ui::MainWindow *ui;
     int _index;
     bool _isTimer;
     QVector<Timer*> _timers;
-    //QVector<Alarm*> _alarms;
+    QVector<Alarm*> _alarms;
 };
 #endif // MAINWINDOW_H

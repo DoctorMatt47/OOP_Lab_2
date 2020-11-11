@@ -1,6 +1,8 @@
-#include "Main/mainwindow.h"
-#include "Timer/addtimerdialog.h"
+#include "Main/UI/mainwindow.h"
+#include "addtimerdialog.h"
 #include "ui_addtimerdialog.h"
+
+#include <QFileDialog>
 
 AddTimerDialog::AddTimerDialog(QWidget *parent) :
     QDialog(parent),
@@ -8,6 +10,7 @@ AddTimerDialog::AddTimerDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     _time = QTime(0,0,0,0);
+    ui->ringtoneText->setText("F:\\Project\\OOP_Lab_2\\Resources\\nice_alarm_sound.mp3");
 }
 
 AddTimerDialog::~AddTimerDialog()
@@ -28,6 +31,11 @@ QString AddTimerDialog::GetName()
 QString AddTimerDialog::GetInfo()
 {
     return ui->infoText->toPlainText();
+}
+
+QString AddTimerDialog::GetPath()
+{
+    return ui->ringtoneText->toPlainText();
 }
 
 void AddTimerDialog::on_increaseSecondsButton_clicked()
@@ -78,5 +86,19 @@ void AddTimerDialog::on_cancelButton_clicked()
 
 void AddTimerDialog::on_applyButton_clicked()
 {
-    this->accept();
+    if (!ui->nameText->toPlainText().isEmpty())
+        this->accept();
+}
+
+void AddTimerDialog::on_toolButton_clicked()
+{
+    QFileDialog fileDlg;
+    this->hide();
+    fileDlg.setModal(true);
+    fileDlg.exec();
+
+        auto url = fileDlg.getOpenFileUrl();
+        ui->ringtoneText->setText(url.path());
+
+    this->show();
 }

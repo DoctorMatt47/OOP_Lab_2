@@ -1,20 +1,17 @@
 #include "timer.h"
 
-Timer::Timer(QObject *parent) : QObject(parent)
-{
-
-}
-
-Timer::Timer(QTime timeMax, QString name, QString info)
+Timer::Timer(QTime timeMax, QString name, QString info, QString ringtonPath)
 {
     _timeMax = timeMax;
     _name = name;
     _info = info;
     _timeLeft = timeMax;
+    _ringtonPath = ringtonPath;
     _isActive = false;
     _isStarted = false;
-    _dateTimeOfCreating.currentDateTime();
+    _dateTimeOfCreating = QDateTime::currentDateTime();
 
+    _bellDlg = new BellDialog();
     _timer = new QTimer();
     connect(_timer, SIGNAL(timeout()), this, SLOT(OnTick()));
 
@@ -28,15 +25,18 @@ Timer::Timer(const Timer &t)
     _info = t._info;
     _isActive = t._isActive;
     _isStarted = t._isStarted;
-    _dateTimeOfCreating.currentDateTime();
+    _dateTimeOfCreating = QDateTime::currentDateTime();
 
+    _bellDlg = new BellDialog();
     _timer = new QTimer();
     connect(_timer, SIGNAL(timeout()), this, SLOT(OnTick()));
 }
 
 Timer::~Timer()
 {
+    disconnect(_timer, SIGNAL(timeout()), this, SLOT(OnTick()));
     delete _timer;
+    delete _bellDlg;
 }
 
 QString Timer::GetName()
@@ -124,5 +124,9 @@ void Timer::OnTick()
     if (_timeLeft.hour() == 0 && _timeLeft.minute() == 0 && _timeLeft.second() == 0)
     {
         Stop();
+        _bellDlg->AddName(_name);
+        _bellDlg->AddInfo(_info);
+        _bellDlg->AddSound(_ringtonPath);
+        _bellDlg->show();
     }
 }

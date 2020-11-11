@@ -14,6 +14,7 @@ class AddTimerDialog : public QDialog
 
 public:
     explicit AddTimerDialog(QWidget *parent = nullptr);
+
     ~AddTimerDialog();
 
     QTime GetTime();
@@ -21,6 +22,8 @@ public:
     QString GetName();
 
     QString GetInfo();
+
+    QString GetPath();
 
 private slots:
     void on_increaseSecondsButton_clicked();
@@ -38,6 +41,8 @@ private slots:
     void on_cancelButton_clicked();
 
     void on_applyButton_clicked();
+
+    void on_toolButton_clicked();
 
 private:
     Ui::AddTimerDialog *ui;

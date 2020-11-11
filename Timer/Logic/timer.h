@@ -5,13 +5,15 @@
 #include <QObject>
 #include <QTimer>
 
+#include <Main/UI/belldialog.h>
+
 class Timer : public QObject
 {
     Q_OBJECT
 public:
-    explicit Timer(QObject *parent = nullptr);
+    explicit Timer(QObject *parent = nullptr) = delete;
 
-    Timer(QTime timeMax, QString name, QString info);
+    Timer(QTime timeMax, QString name, QString info, QString ringtonPath);
 
     Timer(const Timer& t);
 
@@ -48,11 +50,13 @@ private slots:
     void OnTick();
 
 private:
+    BellDialog* _bellDlg;
     QTimer* _timer;
     QTime _timeLeft;
     QTime _timeMax;
     QString _name;
     QString _info;
+    QString _ringtonPath;
     QDateTime _dateTimeOfCreating;
     bool _isActive;
     bool _isStarted;
