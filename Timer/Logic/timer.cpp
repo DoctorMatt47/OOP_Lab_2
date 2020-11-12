@@ -39,6 +39,12 @@ Timer::~Timer()
     delete _bellDlg;
 }
 
+void Timer::SetDndTime(QTime *timeDndFrom, QTime *timeDndTo)
+{
+    _timeDndFrom = timeDndFrom;
+    _timeDndTo = timeDndTo;
+}
+
 QString Timer::GetName()
 {
     return _name;
@@ -54,6 +60,11 @@ QTime Timer::GetLeftTime()
     return _timeLeft;
 }
 
+QTime Timer::GetMaxTime()
+{
+    return _timeMax;
+}
+
 bool Timer::GetIsActive()
 {
     return _isActive;
@@ -67,6 +78,13 @@ bool Timer::GetIsStarted()
 QDateTime Timer::GetDateTimeOfCreating()
 {
     return _dateTimeOfCreating;
+}
+
+double Timer::GetPercentOfProgress()
+{
+    double timeLeftSecs = _timeLeft.hour() * 60 * 60 + _timeLeft.minute() * 60 + _timeLeft.second();
+    double timeMaxSecs = _timeMax.hour() * 60 * 60 + _timeMax.minute() * 60 + _timeMax.second();
+    return (timeMaxSecs - timeLeftSecs) / timeMaxSecs;
 }
 
 bool Timer::Start()
@@ -120,13 +138,16 @@ bool Timer::Continue()
 void Timer::OnTick()
 {
     _timeLeft = _timeLeft.addSecs(-1);
-    TimeDecrease();
     if (_timeLeft.hour() == 0 && _timeLeft.minute() == 0 && _timeLeft.second() == 0)
     {
         Stop();
-        _bellDlg->AddName(_name);
-        _bellDlg->AddInfo(_info);
-        _bellDlg->AddSound(_ringtonPath);
-        _bellDlg->show();
+        if (QTime::currentTime() < *_timeDndFrom || QTime::currentTime() > *_timeDndTo)
+        {
+            _bellDlg->AddName(_name);
+            _bellDlg->AddInfo(_info);
+            _bellDlg->AddSound(_ringtonPath);
+            _bellDlg->show();
+        }
     }
+    TimeDecrease();
 }

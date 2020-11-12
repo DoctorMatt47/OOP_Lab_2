@@ -22,11 +22,13 @@ public:
 private slots:
     void OnTimeDecrease();
 
-    void on_buttonChangeTimer_clicked();
+    void on_buttonAddTimer_clicked();
 
-    void on_buttonChangeAlarm_clicked();
+    void on_buttonAddAlarm_clicked();
 
-    void on_listTimers_itemClicked(QListWidgetItem *item);
+    void on_listTimers_itemClicked();
+
+    void on_listAlarms_itemClicked();
 
     void on_buttonStop_clicked();
 
@@ -36,13 +38,23 @@ private slots:
 
     void on_buttonPause_clicked();
 
-    void on_listAlarms_itemClicked(QListWidgetItem *item);
+    void on_checkBox_toggled(bool checked);
+
+    void on_timeDndFrom_userTimeChanged(const QTime &time);
+
+    void on_timeDndTo_userTimeChanged(const QTime &time);
 
 private:
     Ui::MainWindow *ui;
+    int _amountOfActiveTimers;
+    int _amountOfActiveAlarms;
     int _index;
     bool _isTimer;
+    QTime _timeDndFrom;
+    QTime _timeDndTo;
     QVector<Timer*> _timers;
     QVector<Alarm*> _alarms;
+
+    QString FindNameOfFirstTimer();
 };
 #endif // MAINWINDOW_H

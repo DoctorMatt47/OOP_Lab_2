@@ -25,6 +25,8 @@ public:
 
     void SetInfo(QString info);
 
+    void SetDndTime(QTime* timeDndFrom, QTime* timeDndTo);
+
     int GetLeftDays();
 
     QString GetName();
@@ -51,6 +53,8 @@ private:
     int _daysLeft;
     BellDialog* _bellDlg;
     QTimer* _timer;
+    QTime* _timeDndFrom;
+    QTime* _timeDndTo;
     QTime _timeAlarm;
     QTime _timeLeft;
     QString _name;

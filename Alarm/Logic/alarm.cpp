@@ -1,4 +1,5 @@
 #include "alarm.h"
+#include <QtMath>
 
 Alarm::Alarm(QTime timeAlarm, QString name, QString info, QString ringtonPath, QVector<bool> daysOfWeek)
 {
@@ -9,6 +10,8 @@ Alarm::Alarm(QTime timeAlarm, QString name, QString info, QString ringtonPath, Q
     _daysOfWeek = daysOfWeek;
     _timeLeft.setHMS(0, 0, 0);
     _daysLeft = 0;
+
+    _dateTimeOfCreating = QDateTime::currentDateTime();
 
     _bellDlg = new BellDialog();
 
@@ -48,6 +51,12 @@ void Alarm::SetName(QString name)
 void Alarm::SetInfo(QString info)
 {
     _info = info;
+}
+
+void Alarm::SetDndTime(QTime *timeDndFrom, QTime *timeDndTo)
+{
+    _timeDndFrom = timeDndFrom;
+    _timeDndTo = timeDndTo;
 }
 
 int Alarm::GetLeftDays()
@@ -98,7 +107,6 @@ void Alarm::Off()
 void Alarm::OnTick()
 {
     _timeLeft = _timeLeft.addSecs(-1);
-    TimeDecrease();
     if (_timeLeft.hour() == 0 && _timeLeft.minute() == 0 && _timeLeft.second() == 0)
     {
         if (_daysLeft != 0)
@@ -108,7 +116,7 @@ void Alarm::OnTick()
         else
         {
             FindTimeLeft();
-            if (_isActive)
+            if (!_isActive && (QTime::currentTime() < *_timeDndFrom || QTime::currentTime() > *_timeDndTo))
             {
                 _bellDlg->AddName(_name);
                 _bellDlg->AddInfo(_info);
@@ -117,6 +125,7 @@ void Alarm::OnTick()
             }
         }
     }
+    TimeDecrease();
 }
 
 void Alarm::FindTimeLeft()
@@ -128,13 +137,14 @@ void Alarm::FindTimeLeft()
    }
    for (auto i = dayOfWeek; i < _daysOfWeek.size() + dayOfWeek - 1; i++)
    {
+       auto temp = i;
        if (i == _daysOfWeek.size())
        {
            i = _daysOfWeek.size() - i;
        }
        if (_daysOfWeek[i])
        {
-           _daysLeft = i - dayOfWeek;
+           _daysLeft = qFabs(temp - dayOfWeek);
            _timeLeft = _timeLeft.addSecs(QTime::currentTime().secsTo(_timeAlarm));
            break;
        }

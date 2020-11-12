@@ -23,17 +23,23 @@ public:
 
     void SetInfo(QString info);
 
+    void SetDndTime(QTime* timeDndFrom, QTime* timeDndTo);
+
     QString GetName();
 
     QString GetInfo();
 
     QTime GetLeftTime();
 
+    QTime GetMaxTime();
+
     bool GetIsActive();
 
     bool GetIsStarted();
 
     QDateTime GetDateTimeOfCreating();
+
+    double GetPercentOfProgress();
 
     bool Start();
 
@@ -52,6 +58,8 @@ private slots:
 private:
     BellDialog* _bellDlg;
     QTimer* _timer;
+    QTime* _timeDndFrom;
+    QTime* _timeDndTo;
     QTime _timeLeft;
     QTime _timeMax;
     QString _name;
