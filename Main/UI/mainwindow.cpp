@@ -3,11 +3,17 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+/*!
+ * \brief MainWindow
+ *
+ * Default constructor.
+ *
+ * \param parent Parent object.
+ */
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    //this->setWindowFlags(Qt::CustomizeWindowHint);
     _index = -1;
     _isTimer = true;
     _amountOfActiveTimers = 0;
@@ -25,38 +31,59 @@ MainWindow::MainWindow(QWidget *parent)
     ui->labelTo->setEnabled(false);
 }
 
+/*!
+ * \brief ~MainWindow
+ *
+ * Default destructor. Destruct the object.
+ */
 MainWindow::~MainWindow()
 {
     delete ui;
-    for (auto var : _timers)
-        delete var;
+    for (auto timer : _timers)
+        delete timer;
+    for (auto alarm : _alarms)
+        delete alarm;
 }
 
+/*!
+ * \brief OnTimeDecrease
+ *
+ * This slot is connected to the TimeDecrease()
+ * signal from the Timer or Alarm class. Each call
+ * to this method enters information about connected
+ * timer on main window.
+ */
 void MainWindow::OnTimeDecrease()
 {
     if (_isTimer)
     {
         ui->labelTimeLeft->setText(_timers[_index]->GetLeftTime().toString("hh:mm:ss"));
         ui->progressBar->setValue(static_cast<int>(_timers[_index]->GetPercentOfProgress() * 100));
-        if (!_timers[_index]->GetIsStarted())
+        if (!_timers[_index]->GetIsActive())
         {
-            _amountOfActiveTimers--;
             ui->buttonStart->show();
             ui->buttonStop->hide();
-
         }
     }
     else
     {
         ui->labelTimeLeft->setText(_alarms[_index]->GetLeftTime().toString("hh:mm:ss"));
         ui->labelDaysLeft->setText(QString::number(_alarms[_index]->GetLeftDays()) + " days");
-        if (!_alarms[_index]->GetIsActive())
-        {
-            _amountOfActiveAlarms--;
-        }
     }
 }
 
+void MainWindow::OnCall()
+{
+    _amountOfActiveTimers--;
+    ui->labelActiveTimers->setText(QString::number(_amountOfActiveTimers));
+    FindNameOfFirstTimer();
+}
+
+/*!
+ * \brief on_buttonAddTimer_clicked
+ *
+ * This slot calls window of creating a new timer.
+ */
 void MainWindow::on_buttonAddTimer_clicked()
 {
     this->hide();
@@ -68,10 +95,16 @@ void MainWindow::on_buttonAddTimer_clicked()
         timer->SetDndTime(&_timeDndFrom, &_timeDndTo);
         _timers.push_back(timer);
         ui->listTimers->addItem(_timers.back()->GetName());
+        connect(_timers.back(), &Timer::Call, this, &MainWindow::OnCall);
     }
     this->show();
 }
 
+/*!
+ * \brief on_buttonAddAlarm_clicked
+ *
+ * This slot calls window of creating a new alarm.
+ */
 void MainWindow::on_buttonAddAlarm_clicked()
 {
     this->hide();
@@ -89,14 +122,20 @@ void MainWindow::on_buttonAddAlarm_clicked()
     this->show();
 }
 
+/*!
+ * \brief on_listTimers_itemClicked
+ *
+ * This slot enters information about selected
+ * timer on main window.
+ */
 void MainWindow::on_listTimers_itemClicked()
 {
     if (_index != -1)
     {
         if (_isTimer)
-            disconnect(_timers[_index], SIGNAL(TimeDecrease()), this, SLOT(OnTimeDecrease()));
+            disconnect(_timers[_index], &Timer::TimeDecrease, this, &MainWindow::OnTimeDecrease);
         else
-            disconnect(_alarms[_index], SIGNAL(TimeDecrease()), this, SLOT(OnTimeDecrease()));
+            disconnect(_alarms[_index], &Alarm::TimeDecrease, this, &MainWindow::OnTimeDecrease);
     }
 
     _index = ui->listTimers->currentRow();
@@ -131,17 +170,23 @@ void MainWindow::on_listTimers_itemClicked()
         ui->buttonStop->hide();
     }
 
-    connect(_timers[_index], SIGNAL(TimeDecrease()), this, SLOT(OnTimeDecrease()));
+    connect(_timers[_index], &Timer::TimeDecrease, this, &MainWindow::OnTimeDecrease);
 }
 
+/*!
+ * \brief on_listAlarms_itemClicked
+ *
+ * This slot enters information about selected
+ * alarm on main window.
+ */
 void MainWindow::on_listAlarms_itemClicked()
 {
     if (_index != -1)
     {
         if (_isTimer)
-            disconnect(_timers[_index], SIGNAL(TimeDecrease()), this, SLOT(OnTimeDecrease()));
+            disconnect(_timers[_index], &Timer::TimeDecrease, this, &MainWindow::OnTimeDecrease);
         else
-            disconnect(_alarms[_index], SIGNAL(TimeDecrease()), this, SLOT(OnTimeDecrease()));
+            disconnect(_alarms[_index], &Alarm::TimeDecrease, this, &MainWindow::OnTimeDecrease);
     }
 
     _index = ui->listAlarms->currentRow();
@@ -169,9 +214,15 @@ void MainWindow::on_listAlarms_itemClicked()
         ui->buttonPause->hide();
     }
 
-    connect(_alarms[_index], SIGNAL(TimeDecrease()), this, SLOT(OnTimeDecrease()));
+    connect(_alarms[_index], &Alarm::TimeDecrease, this, &MainWindow::OnTimeDecrease);
 }
 
+/*!
+ * \brief on_buttonStop_clicked
+ *
+ * This slot stops the selected timer,
+ * returns it to its starting position.
+ */
 void MainWindow::on_buttonStop_clicked()
 {
     if (_index == -1)
@@ -190,6 +241,11 @@ void MainWindow::on_buttonStop_clicked()
     }
 }
 
+/*!
+ * \brief on_buttonStart_clicked
+ *
+ * This slot starts the selected timer.
+ */
 void MainWindow::on_buttonStart_clicked()
 {
     if (_index == -1)
@@ -207,6 +263,12 @@ void MainWindow::on_buttonStart_clicked()
     }
 }
 
+/*!
+ * \brief on_buttonContinue_clicked
+ *
+ * This slot continues selected timer or alarm,
+ * if it was paused.
+ */
 void MainWindow::on_buttonContinue_clicked()
 {
     if (_index == -1)
@@ -234,6 +296,12 @@ void MainWindow::on_buttonContinue_clicked()
     }
 }
 
+/*!
+ * \brief on_buttonPause_clicked
+ *
+ * This slot pauses selected timer or alarm.
+ * Time will be paused, but can be continued.
+ */
 void MainWindow::on_buttonPause_clicked()
 {
     if (_index == -1)
@@ -261,6 +329,12 @@ void MainWindow::on_buttonPause_clicked()
     }
 }
 
+/*!
+ * \brief on_buttonPause_clicked
+ *
+ * This slot pauses selected timer or alarm.
+ * Time will be paused, but can be continued.
+ */
 QString MainWindow::FindNameOfFirstTimer()
 {
     Timer* minTimer = nullptr;
@@ -280,6 +354,13 @@ QString MainWindow::FindNameOfFirstTimer()
     return "";
 }
 
+/*!
+ * \brief on_checkBox_toggled
+ *
+ * This slot enables or disables Do Not Disturb.
+ *
+ * \param checked If checked true, else false.
+ */
 void MainWindow::on_checkBox_toggled(bool checked)
 {
     if (!checked)
@@ -302,11 +383,29 @@ void MainWindow::on_checkBox_toggled(bool checked)
     }
 }
 
+/*!
+ * \brief on_timeDndFrom_userTimeChanged
+ *
+ * This slot sets time, from which
+ * Do Not Disturb mode starts.
+ *
+ * \param time Time from which
+ * Do Not Disturb mode starts.
+ */
 void MainWindow::on_timeDndFrom_userTimeChanged(const QTime &time)
 {
     _timeDndFrom = time;
 }
 
+/*!
+ * \brief on_timeDndTo_userTimeChanged
+ *
+ * This slot sets time, when
+ * Do Not Disturb mode ends.
+ *
+ * \param time Time, when
+ * Do Not Disturb mode ends.
+ */
 void MainWindow::on_timeDndTo_userTimeChanged(const QTime &time)
 {
     _timeDndTo = time;
